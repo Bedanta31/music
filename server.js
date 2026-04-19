@@ -8,33 +8,42 @@ app.use(cors());
 
 let accessToken = "";
 
-// 🔑 Get Spotify Access Token
-async function getAccessToken() {
-  const res = await axios.post(
-    "https://accounts.spotify.com/api/token",
-    "grant_type=client_credentials",
-    {
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-        Authorization:
-          "Basic " +
-          Buffer.from(
-            process.env.CLIENT_ID + ":" + process.env.CLIENT_SECRET
-          ).toString("base64"),
-      },
-    }
-  );
+// 🔑 Get Spotify Token
+async function getToken() {
+  try {
+    const res = await axios.post(
+      "https://accounts.spotify.com/api/token",
+      "grant_type=client_credentials",
+      {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          Authorization:
+            "Basic " +
+            Buffer.from(
+              process.env.CLIENT_ID + ":" + process.env.CLIENT_SECRET
+            ).toString("base64"),
+        },
+      }
+    );
 
-  accessToken = res.data.access_token;
+    accessToken = res.data.access_token;
+    console.log("Spotify token updated");
+  } catch (err) {
+    console.error("Token error:", err.message);
+  }
 }
 
-// 🔄 Refresh token every 50 mins
-setInterval(getAccessToken, 50 * 60 * 1000);
-getAccessToken();
+// Refresh token every 50 min
+setInterval(getToken, 50 * 60 * 1000);
+getToken();
 
-// 🔍 Search API
+// 🔍 Search route
 app.get("/search", async (req, res) => {
   const query = req.query.q;
+
+  if (!query) {
+    return res.json([]);
+  }
 
   try {
     const response = await axios.get(
@@ -46,17 +55,19 @@ app.get("/search", async (req, res) => {
       }
     );
 
-    const tracks = response.data.tracks.items.map((track) => ({
+    const songs = response.data.tracks.items.map((track) => ({
       name: track.name,
-      artist: track.artists[0].name,
+      artist: track.artists.map(a => a.name).join(", "),
       image: track.album.images[0]?.url,
       preview: track.preview_url,
     }));
 
-    res.json(tracks);
+    res.json(songs);
   } catch (err) {
-    res.status(500).json({ error: "Error fetching songs" });
+    console.error(err.message);
+    res.status(500).json({ error: "Failed to fetch songs" });
   }
 });
 
-app.listen(3000, () => console.log("Server running on port 3000"));
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log("Server running on port " + PORT));
