@@ -46,7 +46,8 @@
 
   <h1>🎵 Music Search</h1>
 
-  <input id="search" placeholder="Search song...">
+  <input id="search" placeholder="Search song..." 
+       onkeydown="if(event.key==='Enter') searchSongs()">
   <button onclick="searchSongs()">Search</button>
 
   <div id="results"></div>
