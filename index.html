@@ -56,16 +56,6 @@
   <script src="https://www.youtube.com/iframe_api"></script>
   <script>
   const API = "https://music-production-3008.up.railway.app";
-  let player;
-
-  // YouTube Player ready
-  function onYouTubeIframeAPIReady() {
-    player = new YT.Player('player', {
-      height: '200',
-      width: '300',
-      videoId: ''
-    });
-  }
 
   async function searchSongs() {
     const query = document.getElementById("search").value;
@@ -79,29 +69,22 @@
       return;
     }
 
-    // 🎯 Take first song
     const song = songs[0];
 
     const searchQuery = `${song.name} ${song.artist}`;
 
-    // 🔍 Search on YouTube
-    const ytRes = await fetch(
-      `https://ytsearch.vercel.app/api/search?q=${encodeURIComponent(searchQuery)}`
-    );
+    // 🎵 Direct YouTube embed search
+    const videoUrl = `https://www.youtube.com/embed?autoplay=1&listType=search&list=${encodeURIComponent(searchQuery)}`;
 
-    const ytData = await ytRes.json();
+    document.getElementById("player").innerHTML = `
+      <iframe width="300" height="200"
+        src="${videoUrl}"
+        frameborder="0"
+        allow="autoplay"
+        allowfullscreen>
+      </iframe>
+    `;
 
-    if (!ytData.videos || ytData.videos.length === 0) {
-      alert("No video found 😢");
-      return;
-    }
-
-    const videoId = ytData.videos[0].id;
-
-    // 🎵 Play video
-    player.loadVideoById(videoId);
-
-    // Show song info
     document.getElementById("results").innerHTML = `
       <div class="song">
         <img src="${song.image}" />
