@@ -13,23 +13,25 @@ async function getToken() {
   try {
     const res = await axios.post(
       "https://accounts.spotify.com/api/token",
-      "grant_type=client_credentials",
+      new URLSearchParams({
+        grant_type: "client_credentials",
+      }),
       {
         headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
           Authorization:
             "Basic " +
             Buffer.from(
               process.env.CLIENT_ID + ":" + process.env.CLIENT_SECRET
             ).toString("base64"),
+          "Content-Type": "application/x-www-form-urlencoded",
         },
       }
     );
 
     accessToken = res.data.access_token;
-    console.log("Spotify token updated");
+    console.log("Spotify token updated:", accessToken.slice(0, 10) + "...");
   } catch (err) {
-    console.error("Token error:", err.message);
+    console.error("Token error:", err.response?.data || err.message);
   }
 }
 
