@@ -31,11 +31,8 @@ async function getToken() {
     accessToken = res.data.access_token;
     console.log("Spotify token updated:", accessToken.slice(0, 10) + "...");
   } catch (err) {
-  console.error("Spotify error:", err.response?.data || err.message);
-
-  res.status(500).json(
-    err.response?.data || { error: err.message }
-  );
+    console.error("Token error:", err.response?.data || err.message);
+  }
 }
 
 // Refresh token every 50 min
@@ -68,10 +65,13 @@ app.get("/search", async (req, res) => {
     }));
 
     res.json(songs);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).json({ error: "Failed to fetch songs" });
-  }
+  }catch (err) {
+  console.error("Spotify error:", err.response?.data || err.message);
+
+  res.status(500).json(
+    err.response?.data || { error: err.message }
+  );
+}
 });
 
 const PORT = process.env.PORT || 3000;
