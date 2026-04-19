@@ -55,46 +55,58 @@
   <div id="player"></div>
   <script src="https://www.youtube.com/iframe_api"></script>
   <script>
-  const API = "https://music-production-3008.up.railway.app";
+const API = "https://music-production-3008.up.railway.app";
 
-  async function searchSongs() {
-    const query = document.getElementById("search").value;
-    if (!query) return;
+async function searchSongs() {
+  const query = document.getElementById("search").value;
+  if (!query) return;
 
-    const res = await fetch(`${API}/search?q=${query}`);
-    const songs = await res.json();
+  const res = await fetch(`${API}/search?q=${query}`);
+  const songs = await res.json();
 
-    if (!songs.length) {
-      alert("No song found 😢");
-      return;
-    }
-
-    const song = songs[0];
-
-    const searchQuery = `${song.name} ${song.artist}`;
-
-    // 🎵 Direct YouTube embed search
-    const videoUrl = `https://www.youtube.com/embed?autoplay=1&listType=search&list=${encodeURIComponent(searchQuery)}`;
-
-    document.getElementById("player").innerHTML = `
-      <iframe width="300" height="200"
-        src="${videoUrl}"
-        frameborder="0"
-        allow="autoplay"
-        allowfullscreen>
-      </iframe>
-    `;
-
-    document.getElementById("results").innerHTML = `
-      <div class="song">
-        <img src="${song.image}" />
-        <div>
-          <b>${song.name}</b><br>
-          ${song.artist}
-        </div>
-      </div>
-    `;
+  if (!songs.length) {
+    alert("No song found 😢");
+    return;
   }
+
+  const song = songs[0];
+
+  const searchQuery = `${song.name} ${song.artist} official audio`;
+
+  // 🎵 Embed YouTube player inside SAME page
+  const videoUrl = `https://www.youtube.com/embed?autoplay=1&listType=search&list=${encodeURIComponent(searchQuery)}`;
+
+  document.getElementById("player").innerHTML = `
+    <iframe width="400" height="220"
+      src="${videoUrl}"
+      frameborder="0"
+      allow="autoplay"
+      allowfullscreen>
+    </iframe>
+  `;
+
+  // Show song info + fallback button
+  document.getElementById("results").innerHTML = `
+    <div class="song">
+      <img src="${song.image}" />
+      <div>
+        <b>${song.name}</b><br>
+        ${song.artist}
+      </div>
+      <button onclick="openYT('${searchQuery}')">
+        🔗 Open Full YouTube
+      </button>
+    </div>
+  `;
+}
+
+// 🔗 fallback
+function openYT(query) {
+  window.open(
+    `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`,
+    "_blank"
+  );
+}
 </script>
 </body>
 </html>
