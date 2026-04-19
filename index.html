@@ -52,10 +52,20 @@
 
   <div id="results"></div>
 
-  <audio id="player" controls></audio>
-
+  <div id="player"></div>
+  <script src="https://www.youtube.com/iframe_api"></script>
   <script>
   const API = "https://music-production-3008.up.railway.app";
+  let player;
+
+  // YouTube Player ready
+  function onYouTubeIframeAPIReady() {
+    player = new YT.Player('player', {
+      height: '200',
+      width: '300',
+      videoId: ''
+    });
+  }
 
   async function searchSongs() {
     const query = document.getElementById("search").value;
@@ -64,35 +74,40 @@
     const res = await fetch(`${API}/search?q=${query}`);
     const songs = await res.json();
 
-    // ❗ Safety check
-    if (!Array.isArray(songs) || songs.length === 0) {
+    if (!songs.length) {
       alert("No song found 😢");
       return;
     }
 
-    // 🎯 Get FIRST playable song
-    let song = songs.find(s => s.preview);
+    // 🎯 Take first song
+    const song = songs[0];
 
-    if (!song) {
-      alert("No playable preview found 😢");
+    const searchQuery = `${song.name} ${song.artist}`;
+
+    // 🔍 Search on YouTube
+    const ytRes = await fetch(
+      `https://ytsearch.vercel.app/api/search?q=${encodeURIComponent(searchQuery)}`
+    );
+
+    const ytData = await ytRes.json();
+
+    if (!ytData.videos || ytData.videos.length === 0) {
+      alert("No video found 😢");
       return;
     }
 
-    // 🎵 Auto play
-    const player = document.getElementById("player");
-    player.src = song.preview;
-    player.play();
+    const videoId = ytData.videos[0].id;
 
-    // 🎨 Show only ONE song info
-    const results = document.getElementById("results");
-    results.innerHTML = `
+    // 🎵 Play video
+    player.loadVideoById(videoId);
+
+    // Show song info
+    document.getElementById("results").innerHTML = `
       <div class="song">
-        <div style="display:flex;gap:10px;align-items:center">
-          <img src="${song.image}" />
-          <div>
-            <b>${song.name}</b><br>
-            ${song.artist}
-          </div>
+        <img src="${song.image}" />
+        <div>
+          <b>${song.name}</b><br>
+          ${song.artist}
         </div>
       </div>
     `;
