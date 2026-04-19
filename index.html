@@ -54,48 +54,48 @@
   <audio id="player" controls></audio>
 
   <script>
-    const API = "https://music-production-3008.up.railway.app"; // change after deploy
+  const API = "https://music-production-3008.up.railway.app";
 
-    async function searchSongs() {
-      const query = document.getElementById("search").value;
-      if (!query) return;
+  async function searchSongs() {
+    const query = document.getElementById("search").value;
+    if (!query) return;
 
-      const res = await fetch(`${API}/search?q=${query}`);
-      const songs = await res.json();
+    const res = await fetch(`${API}/search?q=${query}`);
+    const songs = await res.json();
 
-      const results = document.getElementById("results");
-      results.innerHTML = "";
+    // ❗ Safety check
+    if (!Array.isArray(songs) || songs.length === 0) {
+      alert("No song found 😢");
+      return;
+    }
 
-      songs.forEach(song => {
-        const div = document.createElement("div");
-        div.className = "song";
+    // 🎯 Get FIRST playable song
+    let song = songs.find(s => s.preview);
 
-        div.innerHTML = `
-          <div style="display:flex;gap:10px;align-items:center">
-            <img src="${song.image}" />
-            <div>
-              <b>${song.name}</b><br>
-              ${song.artist}
-            </div>
+    if (!song) {
+      alert("No playable preview found 😢");
+      return;
+    }
+
+    // 🎵 Auto play
+    const player = document.getElementById("player");
+    player.src = song.preview;
+    player.play();
+
+    // 🎨 Show only ONE song info
+    const results = document.getElementById("results");
+    results.innerHTML = `
+      <div class="song">
+        <div style="display:flex;gap:10px;align-items:center">
+          <img src="${song.image}" />
+          <div>
+            <b>${song.name}</b><br>
+            ${song.artist}
           </div>
-          <button onclick="playSong('${song.preview}')">▶</button>
-        `;
-
-        results.appendChild(div);
-      });
-    }
-
-    function playSong(url) {
-      if (!url) {
-        alert("No preview available 😢");
-        return;
-      }
-
-      const player = document.getElementById("player");
-      player.src = url;
-      player.play();
-    }
-  </script>
-
+        </div>
+      </div>
+    `;
+  }
+</script>
 </body>
 </html>
